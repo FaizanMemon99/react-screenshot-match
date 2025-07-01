@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Edit, Trash2, Home, ShoppingCart, Package, GraduationCap, BarChart3, MessageCircle, Menu, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import RedwoodHeader from '../images/redwood-header-stripe-only.webp'
-import {InputLabel, FormControl, Select as MUISelect, OutlinedInput, MenuItem} from '@mui/material';
+import Image from "../images/c1bce6af-9b42-42aa-b440-e72061f5e52a.png"; // Example image import
 const Index = () => {
   const [orderData, setOrderData] = useState({
     customerName: "ABC Corporation",
@@ -27,7 +27,7 @@ const Index = () => {
       listPrice: "3,000.00 CAD",
       quantity: 5,
       amount: "15,000.00 CAD",
-      image: "/lovable-uploads/c1bce6af-9b42-42aa-b440-e72061f5e52a.png"
+      image: Image
     },
     {
       product: "Macbook Pro 15'' 2019",
@@ -35,7 +35,7 @@ const Index = () => {
       listPrice: "3,000.00 CAD",
       quantity: 5,
       amount: "15,000.00 CAD",
-      image: "/lovable-uploads/c1bce6af-9b42-42aa-b440-e72061f5e52a.png"
+      image: Image
     }
   ];
 
