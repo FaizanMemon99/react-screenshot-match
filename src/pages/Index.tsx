@@ -40,7 +40,7 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-100 p-10 pb-5 h-full"
+    <div className="min-h-screen bg-gray-100 px-10 py-0 h-full"
       style={{
         margin: '0',
         backgroundColor: '#E5E4E4',
