@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
-  base: '/react-screenshot-match/',
+  base: '/react-screenshot-match',
   plugins: [
     react(),
     mode === 'development' &&
