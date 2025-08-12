@@ -1,7 +1,7 @@
 {
-  "name": "My PWA App",
-  "short_name": "PWA",
-  "description": "My PWA without vite-plugin-pwa",
+  "name": "Sample REACT+MUI(Redwood)",
+  "short_name": "SRMR",
+  "description": "Sample REACT+MUI(Redwood)",
   "start_url": "/react-screenshot-match",
   "scope": ".",
   "display": "standalone",
