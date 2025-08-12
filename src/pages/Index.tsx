@@ -1,14 +1,79 @@
-import { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Edit, Trash2, Home, ShoppingCart, Package, GraduationCap, BarChart3, MessageCircle, Menu, X } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import RedwoodHeader from '../images/redwood-header-stripe-only.webp'
-import Image from "../images/c1bce6af-9b42-42aa-b440-e72061f5e52a.png"; // Example image import
-const Index = () => {
+import React, { useMemo, useState } from "react";
+import {
+  ThemeProvider, createTheme, CssBaseline, useMediaQuery, StyledEngineProvider,
+  AppBar, Toolbar, Typography, Box, Container, Grid, Paper, Chip,
+  IconButton, Button, MenuItem, Select, TextField, Drawer,
+  Table, TableHead, TableBody, TableRow, TableCell,
+  Card, CardContent, CardActions, BottomNavigation, BottomNavigationAction, Divider
+} from "@mui/material";
+import {
+  Edit as EditIcon, Delete as DeleteIcon, Home as HomeIcon,
+  ShoppingCart as ShoppingCartIcon, Inventory2 as InventoryIcon,
+  School as SchoolIcon, BarChart as BarChartIcon, Menu as MenuIcon
+} from "@mui/icons-material";
+
+import RedwoodHeader from "../images/redwood-header-stripe-only.webp";
+import Image from "../images/c1bce6af-9b42-42aa-b440-e72061f5e52a.png";
+
+// Visual constants for "default" mode to match your initial design
+const HEADER_BG_CUSTOM = "#36677d";
+const BADGE_BG_CUSTOM = "#16425B";
+const STRIPE_H = 12;
+
+type Mode = "light" | "dark" | "default";
+
+const buildTheme = (mode: Mode) =>
+  createTheme({
+    palette: {
+      mode: mode === "default" ? "light" : mode, // custom = light base with your brand colors
+      primary: { main: "#1F4E79" },
+      secondary: { main: "#16425B" },
+      background:
+        mode === "dark"
+          ? { default: "#0b0f14", paper: "#0f172a" } // explicit dark surfaces
+          : { default: "#E5E4E4", paper: "#ffffff" }, // light/custom
+      text:
+        mode === "dark"
+          ? { primary: "#e2e8f0", secondary: "#94a3b8" }
+          : { primary: "#0f172a", secondary: "#475569" },
+    },
+    shape: { borderRadius: 12 },
+  });
+
+const SAFE_MODES: Mode[] = ["light", "dark", "default"];
+
+export default function Index() {
+  const sysPrefersDark = useMediaQuery("(prefers-color-scheme: dark)");
+  const isMdUp = useMediaQuery("(min-width:900px)");
+
+  // Theme mode
+  const [mode, setMode] = useState<Mode>(sysPrefersDark ? "dark" : "default");
+  const theme = useMemo(() => buildTheme(mode), [mode]);
+
+  const onThemeChange = (e: any) => {
+    const next = e.target.value as Mode;
+    setMode(SAFE_MODES.includes(next) ? next : "light");
+  };
+
+  // Derived brand colors per mode
+  const headerBg =
+    mode === "default"
+      ? HEADER_BG_CUSTOM
+      : theme.palette.mode === "dark"
+        ? theme.palette.background.paper
+        : theme.palette.primary.main;
+
+  const badgeBg =
+    mode === "default" ? BADGE_BG_CUSTOM : theme.palette.secondary.main;
+
+  // Layout heights (explicit so we can calc a fixed scroll pane)
+  const HEADER_TOOLBAR_H = 64;
+  const BOTTOM_NAV_H = 45;
+  const HEADER_TOTAL_H = HEADER_TOOLBAR_H + STRIPE_H;
+
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [navValue, setNavValue] = useState(0);
+
   const [orderData, setOrderData] = useState({
     customerName: "ABC Corporation",
     customerNumber: "54728954923754890",
@@ -19,7 +84,13 @@ const Index = () => {
     shippingCost: "1,500.00 CAD",
     comments: ""
   });
-
+  const navItems = [
+    { label: "Home", icon: <HomeIcon /> },
+    { label: "Orders", icon: <ShoppingCartIcon /> },
+    { label: "Inventory", icon: <InventoryIcon /> },
+    { label: "Training", icon: <SchoolIcon /> },
+    { label: "Analytics", icon: <BarChartIcon /> },
+  ];
   const orderLines = [
     {
       product: "Macbook Pro 15'' 2019",
@@ -40,264 +111,426 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-100 px-10 py-2 h-full"
-      style={{
-        margin: '0',
-        backgroundColor: '#E5E4E4',
-        backgroundImage: 'repeating-conic-gradient(rgba(0,0,0,0.05) 0 1deg, transparent 1deg 2deg)',
-        backgroundSize: '64px 64px',
-        backgroundPosition: '0 0, 0 0',
-        backgroundAttachment: 'fixed'
-      }}
-    >
-      {/* Content */}
-      <div className="max-w-7xl mx-auto relative">
-        {/* Header */}
-        <div className="top-0 left-0 right-0 z-50 bg-[#36677d] px-4 md:px-6 pt-4 rounded-xl shadow-xl">
-          <div className="flex items-center justify-between pb-2">
-            <div className="flex-1 min-w-0">
-              <h1 className="text-lg md:text-xl font-medium text-white truncate">Order #123456</h1>
-              <div className="flex items-center gap-2 md:gap-4 text-xs md:text-sm mt-1 flex-wrap text-white">
-                <span className="bg-[#16425B] px-2 py-1 rounded text-xs">Draft</span>
-                <span className="truncate">ABC Corporation</span>
-                <span className="whitespace-nowrap">2/24/2020</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="hidden md:block text-xs text-white mr-4">Last updated on Jan&nbsp;24, 12:43&nbsp;PM</span>
-              <div className="hidden md:flex items-center gap-2">
-                <Button variant="ghost" className="text-white hover:bg-[#16425B] text-sm">
-                  Cancel
-                </Button>
-                <Button variant="ghost" className="text-white hover:bg-[#16425B] text-sm">
-                  Save
-                </Button>
-                <Button className="bg-white text-[#1F4E79] hover:bg-gray-100 text-sm">
+    <StyledEngineProvider injectFirst>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        {/* Background pattern */}
+        <Box
+          sx={{
+            minHeight: "100vh",
+            bgcolor: "background.default", // <-- fixed key (was bgColor)
+            backgroundImage:
+              theme.palette.mode === "dark"
+                ? "repeating-conic-gradient(rgba(255,255,255,0.04) 0 1deg, transparent 1deg 2deg)"
+                : "repeating-conic-gradient(rgba(0,0,0,0.05) 0 1deg, transparent 1deg 2deg)",
+            backgroundSize: "64px 64px",
+            backgroundAttachment: "fixed"
+          }}
+        >
+          {/* FIXED HEADER (flush to top) */}
+          <AppBar position="fixed" elevation={6} sx={{ bgcolor: headerBg }}>
+            <Toolbar disableGutters sx={{ minHeight: HEADER_TOOLBAR_H, px: { xs: 2, md: 3 }, gap: 1.5 }}>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography variant="h6" noWrap sx={{ color: "#fff", fontWeight: 600 }}>
+                  Order #123456
+                </Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap", mt: 0.5, color: "#fff" }}>
+                  <Chip
+                    size="small"
+                    label="Draft"
+                    sx={{
+                      bgcolor: badgeBg,
+                      color: "#fff",
+                      height: 22,
+                      "& .MuiChip-label": { px: 1.2, fontSize: 12 }
+                    }}
+                  />
+                  <Typography variant="caption" noWrap>ABC Corporation</Typography>
+                  <Typography variant="caption" noWrap>2/24/2020</Typography>
+                </Box>
+              </Box>
+
+              {/* Theme switcher */}
+              <Box sx={{ display: { xs: "none", sm: "flex" }, alignItems: "center", gap: 1, mr: 1 }}>
+                <Typography variant="caption" sx={{ color: "#fff", opacity: 0.9 }}>Theme</Typography>
+                <Select
+                  size="small"
+                  value={mode}
+                  onChange={onThemeChange}
+                  sx={{
+                    color: "#fff",
+                    minWidth: 140,
+                    ".MuiOutlinedInput-notchedOutline": { borderColor: "#fff3" },
+                    "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#fff6" },
+                    ".MuiSvgIcon-root": { color: "#fff" }
+                  }}
+                >
+                  <MenuItem value="light">Light</MenuItem>
+                  <MenuItem value="dark">Dark</MenuItem>
+                  <MenuItem value="default">Default</MenuItem>
+                </Select>
+              </Box>
+
+              {/* Desktop actions */}
+              <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1, color: "#fff" }}>
+                <Typography variant="caption" sx={{ mr: 1.5, opacity: 0.9 }}>
+                  Last updated on Jan&nbsp;24, 12:43 PM
+                </Typography>
+                <Button variant="text" sx={{ textTransform: 'capitalize', color: "#fff" }}>Cancel</Button>
+                <Button variant="text" sx={{ textTransform: 'capitalize', color: "#fff" }}>Save</Button>
+                <Button variant="contained" sx={{ textTransform: 'capitalize', bgcolor: "#fff", color: "#1F4E79", "&:hover": { bgcolor: "#f1f5f9" } }}>
                   Submit
                 </Button>
-              </div>
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" className="md:hidden text-white p-2">
-                    <Menu className="h-5 w-5" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-64">
-                  <div className="flex flex-col gap-3 mt-6">
-                    <Button variant="outline" className="w-full">Cancel</Button>
-                    <Button variant="outline" className="w-full">Save</Button>
-                    <Button className="w-full bg-[#1F4E79] hover:bg-[#16425B] text-white">Submit</Button>
-                  </div>
-                </SheetContent>
-              </Sheet>
-            </div>
-          </div>
-          <div className='md:mx-[-1.5rem] mx-[-1rem] bg-left-bottom bg-repeat-x h-[12px]' style={{
-            backgroundImage: `url(${RedwoodHeader})`,
-            backgroundSize: '50rem'
-          }}>
-          </div>
-        </div>
-        {/* Customer Info */}
+              </Box>
 
-        <div className="bg-white shadow-sm pb-[4rem] h-[75vh] md:h-[74vh] lg:h-[82vh] overflow-x-auto rounded-b-xl">
-          <div className="px-4 py-3">
-            <h2 className="text-xl font-bold text-gray-900">Customer information</h2>
-          </div>
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-              <div>
-                <Label className="text-sm text-gray-700 mb-1 block">Customer Name</Label>
-                <Select value={orderData.customerName}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ABC Corporation">ABC Corporation</SelectItem>
-                  </SelectContent>
-                </Select>
-                <span className="text-xs text-red-500 mt-1 block text-right">Required</span>
-              </div>
-              <div>
-                <Label className="text-sm text-gray-700 mb-2 block">Customer Number</Label>
-                <div className="text-gray-600 text-sm break-all">{orderData.customerNumber}</div>
-              </div>
-              <div>
-                <Label className="text-sm text-gray-700 mb-2 block">Customer Email</Label>
-                <div className="text-blue-600 text-sm break-all">{orderData.customerEmail}</div>
-              </div>
-              <div>
-                <Label className="text-sm text-gray-700 mb-1 block">Currency</Label>
-                <Select value={orderData.currency}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="CAD">CAD</SelectItem>
-                    <SelectItem value="USD">USD</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div>
-                <Label className="text-sm text-gray-700 mb-1 block">Shipping Address</Label>
-                <div className="p-1  pt-0 text-sm whitespace-pre-line">{orderData.shippingAddress}</div>
-              </div>
-              <div>
-                <Label className="text-sm text-gray-700 mb-1 block">Shipping Method</Label>
-                <Select value={orderData.shippingMethod}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Standard">Standard</SelectItem>
-                    <SelectItem value="Express">Express</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className="text-sm text-gray-700 mb-1 block">Shipping Cost</Label>
-                <div className="text-sm font-medium text-gray-900">{orderData.shippingCost}</div>
-              </div>
-            </div>
-          </div>
+              {/* Mobile menu */}
+              <IconButton
+                sx={{ display: { xs: "inline-flex", md: "none" }, color: "#fff" }}
+                onClick={() => setDrawerOpen(true)}
+                aria-label="menu"
+              >
+                <MenuIcon />
+              </IconButton>
+            </Toolbar>
 
-
-          {/* Order Lines */}
-          <div className="px-4 py-3 pb-8">
-            <h2 className="text-xl font-bold text-gray-900">Order Lines</h2>
-          </div>
-
-          {/* Desktop Table */}
-          <div className="hidden md:block overflow-x-auto mx-10">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  {['Product', 'Product Number', 'Product Image', 'List Price', 'Quantity', 'Amount', 'Action'].map(header => (
-                    <th key={header} className="px-6 py-3 text-left text-xs font-medium text-gray-700 tracking-wider">{header}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {orderLines.map((line, i) => (
-                  <tr key={i} className="hover:bg-gray-50 font-semibold">
-                    <td className="px-6 py-4 text-sm text-gray-900">{line.product}</td>
-                    <td className="px-6 py-4 text-sm text-[#2d83a1]">{line.productNumber}</td>
-                    <td className="px-6 py-4">
-                      <img src={line.image} alt={line.product} className="h-8 w-10 object-cover rounded" />
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{line.listPrice}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{line.quantity}</td>
-                    <td className="px-6 py-4 text-sm font-semibold text-gray-900">{line.amount}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-2">
-                        <Button variant="ghost" size="sm" className="p-1 h-8 w-8">
-                          <Edit className="h-4 w-4 text-black-600" />
-                        </Button>
-                        <Button variant="ghost" size="sm" className="p-1 h-8 w-8">
-                          <Trash2 className="h-4 w-4 text-black-600" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Mobile Cards */}
-          <div className="md:hidden">
-            {orderLines.map((line, i) => (
-              <div key={i} className="p-4 border-b border-gray-200 last:border-b-0 font-semibold">
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-gray-900 text-sm mb-1 break-words">{line.product}</h3>
-                    <p className="text-xs text-blue-600 break-all">{line.productNumber}</p>
-                  </div>
-                  <div className="flex gap-2 ml-2">
-                    <Button variant="ghost" size="sm" className="p-2 h-8 w-8">
-                      <Edit className="h-3 w-3 text-gray-500" />
-                    </Button>
-                    <Button variant="ghost" size="sm" className="p-2 h-8 w-8">
-                      <Trash2 className="h-3 w-3 text-gray-500" />
-                    </Button>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <span className="text-gray-500 text-xs">List Price:</span>
-                    <p className="font-medium">{line.listPrice}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-500 text-xs">Quantity:</span>
-                    <p className="font-medium">{line.quantity}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <span className="text-gray-500 text-xs">Amount:</span>
-                    <p className="font-semibold text-base">{line.amount}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="p-6 mt-2">
-            {/* <Label className="text-sm text-gray-700 mb-2 block">Comments</Label> */}
-            <Textarea
-              className="min-h-[80px] resize-none text-sm w-[80%] md:w-[40%]"
-              placeholder="Comments"
-              value={orderData.comments}
-              onChange={e => setOrderData({ ...orderData, comments: e.target.value })}
+            {/* Stripe under header */}
+            <Box
+              sx={{
+                height: STRIPE_H,
+                backgroundImage: `url(${RedwoodHeader})`,
+                backgroundRepeat: "repeat-x",
+                backgroundPosition: "left bottom",
+                backgroundSize: "800px"
+              }}
             />
-          </div>
+          </AppBar>
 
+          {/* MOBILE DRAWER */}
+          <Drawer
+            anchor="right"
+            open={drawerOpen}
+            onClose={() => setDrawerOpen(false)}
+            PaperProps={{ sx: { width: 280, p: 2 } }}
+          >
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              <Select fullWidth size="small" value={mode} onChange={onThemeChange}>
+                <MenuItem value="light">Light</MenuItem>
+                <MenuItem value="dark">Dark</MenuItem>
+                <MenuItem value="default">Default</MenuItem>
+              </Select>
+              <Divider sx={{ my: 1.5 }} />
+              <Button variant="outlined" sx={{ color: mode === 'dark' && '#fff', borderColor: mode === 'dark' && '#fff' }} onClick={() => setDrawerOpen(false)} fullWidth>Cancel</Button>
+              <Button variant="outlined" sx={{ color: mode === 'dark' && '#fff', borderColor: mode === 'dark' && '#fff' }} onClick={() => setDrawerOpen(false)} fullWidth>Save</Button>
+              <Button variant="contained" fullWidth sx={{ bgcolor: "#1F4E79", "&:hover": { bgcolor: "#16425B" } }} onClick={() => setDrawerOpen(false)}>
+                Submit
+              </Button>
+            </Box>
+          </Drawer>
 
-          {/* Attachment */}
-          <div className="px-4 py-3">
-            <h2 className="text-xl font-bold text-gray-900">Attachment</h2>
-          </div>
-          <div className="px-6 mb-2">
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-gray-400 transition-colors w-[80%] md:w-[40%] flex align-center justify-between cursor-pointer">
-              <div className='flex-item'>
-                <h2 className="text-xl font-bold text-gray-900 mb-2">Drag and Drop</h2>
-                <div className="text-xs text-gray-500">Select a file or drop one here.</div>
-              </div>
-              <div className="text-4xl text-black-600 mb-2">+</div>
-            </div>
-          </div>
-        </div>
+          {/* FIXED SCROLL AREA between header and footer */}
+          <Box
+            sx={{
+              position: "fixed",
+              top: `${HEADER_TOTAL_H}px`,
+              bottom: `${BOTTOM_NAV_H}px`,
+              left: 0,
+              right: 0,
+              width: '100%',
+              overflow: "auto",
+            }}
+          >
+            <Container sx={{ py: 0 }} style={{ padding: 0, maxWidth: '100%' }}>
+              <Paper elevation={1} style={{ borderRadius: 0 }}>
+                {/* Customer info header */}
+                <Box sx={{ px: 2, py: 1.5 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>Customer information</Typography>
+                </Box>
 
-      {/* Bottom Navigation */}
-      <div className="absolute bottom-0 w-full bg-white border-t border-gray-200 shadow-lg rounded-b-xl bg-[#f1efed]">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center overflow-x-auto">
-            <div className="flex items-center gap-1 text-gray-600 hover:text-gray-900 cursor-pointer whitespace-nowrap  px-4 md:px-6 py-3 border-t-[3px] border-black">
-              <Home className="h-5 w-5" />
-              <span className="text-sm">Home</span>
-            </div>
-            <div className="flex items-center gap-1 text-gray-600 hover:text-gray-900 cursor-pointer whitespace-nowrap  px-4 md:px-6 py-3 hover:border-t-[2px]">
-              <ShoppingCart className="h-5 w-5" />
-              <span className="text-sm">Orders</span>
-            </div>
-            <div className="flex items-center gap-1 text-gray-600 hover:text-gray-900 cursor-pointer whitespace-nowrap  px-4 md:px-6 py-3 hover:border-t-[2px]">
-              <Package className="h-5 w-5" />
-              <span className="text-sm">Inventory</span>
-            </div>
-            <div className="flex items-center gap-1 text-gray-600 hover:text-gray-900 cursor-pointer whitespace-nowrap  px-4 md:px-6 py-3 hover:border-t-[2px]">
-              <GraduationCap className="h-5 w-5" />
-              <span className="text-sm">Training</span>
-            </div>
-            <div className="flex items-center gap-1 text-gray-600 hover:text-gray-900 cursor-pointer whitespace-nowrap px-4 md:px-6 py-3 hover:border-t-[2px]">
-              <BarChart3 className="h-5 w-5" />
-              <span className="text-sm">Analytics</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      </div>
-    </div>
+                {/* Customer info grid */}
+                <Box sx={{ p: { xs: 2, md: 3 } }}>
+                  <Grid container spacing={3} sx={{ mb: 1 }}>
+                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                      <Typography variant="caption" sx={{ color: "text.secondary", mb: 0.5, display: "block", fontWeight: 'bold', fontSize: 14 }}>
+                        Customer Name
+                      </Typography>
+                      <Select
+                        fullWidth size="small"
+                        value={orderData.customerName}
+                        onChange={(e) => setOrderData((p) => ({ ...p, customerName: e.target.value }))}
+                      >
+                        <MenuItem value="ABC Corporation">ABC Corporation</MenuItem>
+                      </Select>
+                      <Typography
+                        variant="caption"
+                        sx={{ color: "#ef4444", mt: 0.5, display: "block", textAlign: "right" }}
+                      >
+                        Required
+                      </Typography>
+                    </Grid>
+
+                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                      <Typography variant="caption" sx={{ color: "text.secondary", mb: 0.5, display: "block", fontWeight: 'bold', fontSize: 14 }}>
+                        Customer Number
+                      </Typography>
+                      <Typography variant="body2" sx={{ wordBreak: "break-all" }}>
+                        {orderData.customerNumber}
+                      </Typography>
+                    </Grid>
+
+                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                      <Typography variant="caption" sx={{ color: "text.secondary", mb: 0.5, display: "block", fontWeight: 'bold', fontSize: 14 }}>
+                        Customer Email
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: "primary.main", wordBreak: "break-all" }}>
+                        {orderData.customerEmail}
+                      </Typography>
+                    </Grid>
+
+                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                      <Typography variant="caption" sx={{ color: "text.secondary", mb: 0.5, display: "block", fontWeight: 'bold', fontSize: 14 }}>
+                        Currency
+                      </Typography>
+                      <Select
+                        fullWidth size="small"
+                        value={orderData.currency}
+                        onChange={(e) => setOrderData((p) => ({ ...p, currency: e.target.value }))}
+                      >
+                        <MenuItem value="CAD">CAD</MenuItem>
+                        <MenuItem value="USD">USD</MenuItem>
+                      </Select>
+                    </Grid>
+                  </Grid>
+
+                  <Grid container spacing={3}>
+                    <Grid size={{ xs: 12, md: 6, lg: 4 }}>
+
+                      <Typography variant="caption" sx={{ color: "text.secondary", mb: 0.5, display: "block", fontWeight: 'bold', fontSize: 14 }}>
+                        Shipping Address
+                      </Typography>
+                      <Typography variant="body2" sx={{ whiteSpace: "pre-line" }}>
+                        {orderData.shippingAddress}
+                      </Typography>
+                    </Grid>
+
+                    <Grid size={{ xs: 12, sm: 6, lg: 4 }}>
+                      <Typography variant="caption" sx={{ color: "text.secondary", mb: 0.5, display: "block", fontWeight: 'bold', fontSize: 14 }}>
+                        Shipping Method
+                      </Typography>
+                      <Select
+                        fullWidth size="small"
+                        value={orderData.shippingMethod}
+                        onChange={(e) => setOrderData((p) => ({ ...p, shippingMethod: e.target.value }))}
+                      >
+                        <MenuItem value="Standard">Standard</MenuItem>
+                        <MenuItem value="Express">Express</MenuItem>
+                      </Select>
+                    </Grid>
+
+                    <Grid size={{ xs: 12, sm: 6, lg: 4 }}>
+                      <Typography variant="caption" sx={{ color: "text.secondary", mb: 0.5, display: "block", fontWeight: 'bold', fontSize: 14 }}>
+                        Shipping Cost
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {orderData.shippingCost}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </Box>
+
+                {/* Order Lines header */}
+                <Box sx={{ px: 2, py: 1.5 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>Order Lines</Typography>
+                </Box>
+
+                {/* Desktop table */}
+                <Box sx={{ display: { xs: "none", md: "block" }, px: 3, pb: 2, overflowX: "auto" }}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        {["Product", "Product Number", "Product Image", "List Price", "Quantity", "Amount", "Action"]
+                          .map((h) => (
+                            <TableCell key={h} sx={{ fontSize: 12, color: "text.secondary" }}>{h}</TableCell>
+                          ))}
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {orderLines.map((line, i) => (
+                        <TableRow key={i} hover sx={{ "& td": { fontWeight: 600 } }}>
+                          <TableCell>{line.product}</TableCell>
+                          <TableCell sx={{ color: "#2d83a1" }}>{line.productNumber}</TableCell>
+                          <TableCell>
+                            <Box component="img" src={line.image} alt={line.product}
+                              sx={{ height: 32, width: 40, objectFit: "cover", borderRadius: 1 }} />
+                          </TableCell>
+                          <TableCell>{line.listPrice}</TableCell>
+                          <TableCell>{line.quantity}</TableCell>
+                          <TableCell>{line.amount}</TableCell>
+                          <TableCell>
+                            <Box sx={{ display: "flex", gap: 1 }}>
+                              <IconButton size="small"><EditIcon fontSize="small" /></IconButton>
+                              <IconButton size="small"><DeleteIcon fontSize="small" /></IconButton>
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </Box>
+
+                {/* Mobile cards */}
+                <Box sx={{ display: { xs: "block", md: "none" }, px: 1.5, pb: 1 }}>
+                  {orderLines.map((line, i) => (
+                    <Card key={i} variant="outlined" sx={{ mb: 1.5 }}>
+                      <CardContent sx={{ pb: 1 }}>
+                        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5, mb: 1 }}>
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography variant="subtitle2" noWrap title={line.product}>{line.product}</Typography>
+                            <Typography variant="caption" sx={{ color: "primary.main", wordBreak: "break-all" }}>
+                              {line.productNumber}
+                            </Typography>
+                          </Box>
+                          <Box component="img" src={line.image} alt={line.product}
+                            sx={{ height: 36, width: 46, objectFit: "cover", borderRadius: 1 }} />
+                        </Box>
+
+                        <Grid container spacing={1}>
+                          <Grid size={{ xs: 6 }}>
+                            <Typography variant="caption" sx={{ color: "text.secondary" }}>List Price:</Typography>
+                            <Typography variant="body2">{line.listPrice}</Typography>
+                          </Grid>
+                          <Grid size={{ xs: 6 }}>
+                            <Typography variant="caption" sx={{ color: "text.secondary" }}>Quantity:</Typography>
+                            <Typography variant="body2">{line.quantity}</Typography>
+                          </Grid>
+                          <Grid size={{ xs: 12 }}>
+                            <Typography variant="caption" sx={{ color: "text.secondary" }}>Amount:</Typography>
+                            <Typography variant="subtitle2">{line.amount}</Typography>
+                          </Grid>
+                        </Grid>
+                      </CardContent>
+                      <CardActions sx={{ justifyContent: "flex-end", pt: 0 }}>
+                        <IconButton size="small"><EditIcon fontSize="small" /></IconButton>
+                        <IconButton size="small"><DeleteIcon fontSize="small" /></IconButton>
+                      </CardActions>
+                    </Card>
+                  ))}
+                </Box>
+
+                {/* Comments */}
+                <Box sx={{ p: { xs: 2, md: 3 } }}>
+                  <TextField
+                    fullWidth multiline minRows={3} placeholder="Comments"
+                    value={orderData.comments}
+                    onChange={(e) => setOrderData((p) => ({ ...p, comments: e.target.value }))}
+                    sx={{ width: { xs: "100%", md: "60%", lg: "40%" } }}
+                  />
+                </Box>
+
+                {/* Attachment */}
+                <Box sx={{ px: 2, py: 1.5 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>Attachment</Typography>
+                </Box>
+                <Box sx={{ px: { xs: 2, md: 3 }, pb: 3 }}>
+                  <Box
+                    sx={{
+                      border: "2px dashed",
+                      borderColor: "divider",
+                      borderRadius: 2,
+                      p: 3,
+                      width: { xs: "100%", md: "60%", lg: "40%" },
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      cursor: "pointer",
+                      "&:hover": { borderColor: "text.secondary" }
+                    }}
+                  >
+                    <Box>
+                      <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>Drag and Drop</Typography>
+                      <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                        Select a file or drop one here.
+                      </Typography>
+                    </Box>
+                    <Typography variant="h4" sx={{ userSelect: "none" }}>+</Typography>
+                  </Box>
+                </Box>
+              </Paper>
+            </Container>
+          </Box>
+
+          {/* FIXED BOTTOM NAV (flush to bottom) */}
+          <Paper
+            elevation={8}
+            sx={{
+              position: "fixed",
+              left: 0,
+              right: 0,
+              bottom: 0,
+              borderRadius: 0,                       // flush with screen bottom
+              // bgcolor: "#f1efed",                    // matches bg-[#f1efed]
+              borderTop: (t) => `1px solid ${t.palette.divider}`, // border-t
+              boxShadow: (t) => t.shadows[6],        // shadow-lg vibe
+              zIndex: (t) => t.zIndex.appBar,        // keep above content
+            }}
+          >
+           
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  overflowX: "auto",                 // overflow-x-auto
+                  "&::-webkit-scrollbar": { display: "none" },
+                  msOverflowStyle: "none",
+                  scrollbarWidth: "none",
+                  width: "100%",
+                }}
+              >
+                {navItems.map((item, i) => {
+                  const selected = navValue === i;
+                  return (
+                    <Box
+                      key={item.label}
+                      onClick={() => setNavValue(i)}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 0.5,                     // gap-1
+                        color: selected ? "text.primary" : "text.secondary", // text-gray-600 -> hover 900
+                        cursor: "pointer",
+                        whiteSpace: "nowrap",
+                        px: { xs: 2, md: 3 },         // px-4 md:px-6
+                        py: 1.5,                       // py-3
+                        borderTop: selected ? "3px solid #000" : "2px solid transparent",
+                        "&:hover": {
+                          color: "text.primary",
+                          borderTopColor: selected ? "#000" : "currentColor", // hover:border-t-[2px]
+                        },
+                      }}
+                    >
+                      {/* Icon size ~ Tailwind h-5 w-5 */}
+                      <IconButton
+                        disableRipple
+                        size="small"
+                        sx={{
+                          p: 0,
+                          color: "inherit",
+                          "&:hover": { backgroundColor: "transparent" },
+                          mr: 0.5,
+                        }}
+                      >
+                        {/* fontSize small ~ 20px */}
+                        {React.cloneElement(item.icon, { fontSize: "small" })}
+                      </IconButton>
+                      <Typography variant="body2" sx={{ fontSize: 14 }}>
+                        {item.label}
+                      </Typography>
+                    </Box>
+                  );
+                })}
+              </Box>
+          </Paper>
+        </Box>
+      </ThemeProvider>
+    </StyledEngineProvider>
   );
-};
-
-export default Index;
+}
